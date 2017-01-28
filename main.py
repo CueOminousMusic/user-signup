@@ -15,6 +15,21 @@
 # limitations under the License.
 #
 import webapp2
+import cgi
+import re
+
+user_re = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+def validateUsername(username, user_re):
+    return user_re.match(username)
+
+password_re = re.compile(r"^.{3,20}$")
+def validatePassword(password, password_re):
+    return  password_re.match(password)
+
+email_re = re.compile(r"^[\S]+@[\S]+.[\S]+$")
+def validateEmail(email, email_re):
+    return email_re.match(email)
+
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -31,6 +46,15 @@ class MainHandler(webapp2.RequestHandler):
 
 
     def post(self):
+        username = self.request.get('username')
+        password = self.request.get('password')
+        vpassword = self.request.get('vpassword')
+        email = self.request.get('email')
+
+
+
+
+
         self.response.write('Stuff')
 
 app = webapp2.WSGIApplication([
