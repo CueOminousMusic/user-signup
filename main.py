@@ -34,22 +34,32 @@ def validateEmail(email):
     email_re = re.compile(r"^[\S]+@[\S]+.[\S]+$")
     return email_re.match(email)
 
-def renderForm(error):
-    errormsg = error + "<br>"
+def renderForm(error_list, username, email):
     fopen = "<form action='.' method='post'>"
-    unamein = "<label>Username: </label><input type='text' name='username'/><br>"
-    pwordin = "<label>Password: </label><input type='text' name='password'/><br>"
-    vpwordin = "<label>Verify Password: </label><input type='text' name='vpassword'/><br>"
-    emailin = "<label>Email: </label><input type='text' name='email'/><br>"
-    subin = "<input type='submit' value='Submit'>"
+    unamein = "<label>Username: </label><input type='text' name='username' value='"+username+"'/>"
+    if error_list[0] == True:
+        unamein += "  Username Invalid"
+    pwordin = "<br><label>Password: </label><input type='text' name='password'/>"
+    if error_list[1] == True:
+        pwordin += "  Invalid Password"
+    vpwordin = "<br><label>Verify Password: </label><input type='text' name='vpassword'/>"
+    if error_list[2] == True:
+        vpwordin += "  Passwords do not match"
+    emailin = "<br><label>Email: </label><input type='text' name='email' value='"+email+"'/>"
+    if error_list[3] == True:
+        emailin += "  Invalid Email Address"
+    subin = "<br><input type='submit' value='Submit'>"
     fclose = "</form>"
-    content = errormsg + fopen + unamein + pwordin + vpwordin + emailin + subin + fclose
+    content = fopen + unamein + pwordin + vpwordin + emailin + subin + fclose
     return content
 
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        content = renderForm("")
+        error_list = [False, False, False, False]
+        username = ''
+        email = ''
+        content = renderForm(error_list, username, email)
         self.response.write(content)
 
 
@@ -60,30 +70,40 @@ class MainHandler(webapp2.RequestHandler):
         vpassword = self.request.get('vpassword')
         email = self.request.get('email')
 
-        error = ""
+
+        error_list = [False, False, False, False]
 
         if validateUsername(username) == None:
-            error += "Username Invalid  "
+            error_list[0] = True
+            username = ""
         else:
-            incl_user = True
-            username = cgi.escape(username)
+            error_list[0] = False
+            #incl_user = True
+            #username = cgi.escape(username)
 
         if validatePassword(password) == None:
-            error += "Invalid Password  "
-        elif password != vpassword:
-            error += "Passwords do not match  "
+            error_list[1] = True
+        else:
+            error_list[1] = False
+
+        if password != vpassword:
+            error_list[2] = True
+        else:
+            error_list[2] = False
 
 
         if validateEmail(email) == None:
-            error += "Invalid Email Address  "
+            error_list[3] = True
+            email = ""
         else:
-            incl_email = True
-            email = cgi.escape(email)
-            
-        if error == "":
-            content = "Success!"
+            error_list[3] = False
+            #incl_email = True
+            #email = cgi.escape(email)
+
+        if not any(error_list):
+            content = 'Success!'
         else:
-            content = renderForm(error)
+            content = renderForm(error_list, username, email)
 
 
         self.response.write(content)
