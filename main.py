@@ -18,29 +18,37 @@ import webapp2
 import cgi
 import re
 
-user_re = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-def validateUsername(username, user_re):
+
+def validateUsername(username):
+    user_re = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+    print user_re.match(username)
     return user_re.match(username)
 
-password_re = re.compile(r"^.{3,20}$")
-def validatePassword(password, password_re):
+
+def validatePassword(password):
+    password_re = re.compile(r"^.{3,20}$")
     return  password_re.match(password)
 
-email_re = re.compile(r"^[\S]+@[\S]+.[\S]+$")
-def validateEmail(email, email_re):
+
+def validateEmail(email):
+    email_re = re.compile(r"^[\S]+@[\S]+.[\S]+$")
     return email_re.match(email)
+
+def renderForm(error):
+    fopen = "<form action='.' method='post'>"
+    unamein = "<label>Username: </label><input type='text' name='username'/><br>"
+    pwordin = "<label>Password: </label><input type='text' name='password'/><br>"
+    vpwordin = "<label>Verify Password: </label><input type='text' name='vpassword'/><br>"
+    emailin = "<label>Email: </label><input type='text' name='email'/><br>"
+    subin = "<input type='submit' value='Submit'>"
+    fclose = "</form>"
+    content = fopen + unamein + pwordin + vpwordin + emailin + subin + fclose
+    return content
 
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        fopen = "<form action='.' method='post'>"
-        unamein = "<label>Username: </label><input type='text' name='username'/><br>"
-        pwordin = "<label>Password: </label><input type='text' name='password'/><br>"
-        vpwordin = "<label>Verify Password: </label><input type='text' name='vpassword'/><br>"
-        emailin = "<label>Email: </label><input type='text' name='email'/><br>"
-        subin = "<input type='submit' value='Submit'>"
-        fclose = "</form>"
-        content = fopen + unamein + pwordin + vpwordin + emailin + subin + fclose
+        content = renderForm("")
         self.response.write(content)
 
 
@@ -51,11 +59,22 @@ class MainHandler(webapp2.RequestHandler):
         vpassword = self.request.get('vpassword')
         email = self.request.get('email')
 
+        error = ""
+
+        if validateUsername(username) == None:
+            error += "Username Invalid  "
+
+        if validatePassword(password) == None:
+            error += "Invalid Password  "
+        elif password != vpassword:
+            error += "Passwords do not match  "
+
+        if validateEmail(email) == None:
+            error += "Invalid Email Address  "
 
 
 
-
-        self.response.write('Stuff')
+        self.response.write(error)
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
