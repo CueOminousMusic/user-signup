@@ -35,6 +35,7 @@ def validateEmail(email):
     return email_re.match(email)
 
 def renderForm(error):
+    errormsg = error + "<br>"
     fopen = "<form action='.' method='post'>"
     unamein = "<label>Username: </label><input type='text' name='username'/><br>"
     pwordin = "<label>Password: </label><input type='text' name='password'/><br>"
@@ -42,7 +43,7 @@ def renderForm(error):
     emailin = "<label>Email: </label><input type='text' name='email'/><br>"
     subin = "<input type='submit' value='Submit'>"
     fclose = "</form>"
-    content = fopen + unamein + pwordin + vpwordin + emailin + subin + fclose
+    content = errormsg + fopen + unamein + pwordin + vpwordin + emailin + subin + fclose
     return content
 
 
@@ -63,18 +64,29 @@ class MainHandler(webapp2.RequestHandler):
 
         if validateUsername(username) == None:
             error += "Username Invalid  "
+        else:
+            incl_user = True
+            username = cgi.escape(username)
 
         if validatePassword(password) == None:
             error += "Invalid Password  "
         elif password != vpassword:
             error += "Passwords do not match  "
 
+
         if validateEmail(email) == None:
             error += "Invalid Email Address  "
+        else:
+            incl_email = True
+            email = cgi.escape(email)
+            
+        if error == "":
+            content = "Success!"
+        else:
+            content = renderForm(error)
 
 
-
-        self.response.write(error)
+        self.response.write(content)
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
